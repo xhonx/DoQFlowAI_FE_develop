@@ -156,6 +156,7 @@ export default function Sidebar({ list, open = false, onClose, createOpen: exter
           />
         </nav>
         <Button variant="ghost" onClick={() => { navigate('/help'); onClose?.(); }}>도움말</Button>
+        {isLeader ? <Button variant="outline" onClick={() => { navigate('/manage'); onClose?.(); }}>팀장 문서 관리</Button> : null}
         {isLeader ? (
           <Button className="w-full" onClick={openCreate}>
             <span aria-hidden="true">+</span> 문서 만들기

@@ -10,6 +10,8 @@ import DocumentDetailPage from '../pages/DocumentDetailPage';
 import CompareResultPage from '../pages/CompareResultPage';
 import NotFoundPage from '../pages/NotFoundPage';
 import ErrorPage from '../pages/ErrorPage';
+import LeaderRoute from './LeaderRoute';
+import TeamManagementPage from '../pages/TeamManagementPage';
 import HelpPage from '../pages/HelpPage';
 
 // 미리보기 /preview — 개발 서버(npm run dev)에서만 생기고 배포 빌드에는 들어가지 않습니다
@@ -28,6 +30,7 @@ const router = createBrowserRouter([
         element: <ProtectedRoute><Layout /></ProtectedRoute>,
         children: [
           { path: '/', element: <DashboardPage /> },
+          { path: '/manage', element: <LeaderRoute><TeamManagementPage /></LeaderRoute> },
           { path: '/help', element: <HelpPage /> },
           { path: '/documents/:documentId', element: <DocumentDetailPage /> },
           { path: '/documents/:documentId/compare', element: <CompareResultPage /> },
