@@ -12,7 +12,6 @@ on:
 
 permissions:
   contents: read
-  packages: write
 
 concurrency: deploy
 
@@ -26,10 +25,16 @@ jobs:
           node-version: "22"
           cache: npm
       - run: npm ci
+      - run: npm test
       - run: npm run lint
       - run: npm run build
 
   build:
+    # Personal forks run tests only; never publish to the original project or deploy its EC2.
+    if: github.repository == 'DoQFlowAI/DoQScale_Frontend2'
+    permissions:
+      contents: read
+      packages: write
     needs: test
     runs-on: ubuntu-latest
     steps:
@@ -49,6 +54,11 @@ jobs:
             ghcr.io/doqflowai/doqflow-frontend:latest
 
   deploy:
+    # Personal forks run tests only; never publish to the original project or deploy its EC2.
+    if: github.repository == 'DoQFlowAI/DoQScale_Frontend2'
+    permissions:
+      contents: read
+      packages: write
     needs: build
     runs-on: [self-hosted, doqflow-ec2]
     steps:

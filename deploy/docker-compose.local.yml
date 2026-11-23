@@ -1,0 +1,80 @@
+# 실행 위치: frontend/deploy. 운영 배포 compose와 독립된 로컬 구성.
+name: doqflow-local
+
+services:
+  database:
+    image: mariadb:10.11
+    environment:
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?Set DB_ROOT_PASSWORD}
+      MARIADB_DATABASE: doqflow
+      MARIADB_USER: ${DB_APP_USER:-doqflow}
+      MARIADB_PASSWORD: ${DB_APP_PASSWORD:?Set DB_APP_PASSWORD}
+    command: [--character-set-server=utf8mb4, --collation-server=utf8mb4_unicode_ci]
+    volumes:
+      - db-data:/var/lib/mysql
+    healthcheck:
+      test: [CMD, healthcheck.sh, --connect, --innodb_initialized]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+
+  backend:
+    build: ../../backend
+    environment:
+      DB_URL: jdbc:mariadb://database:3306/doqflow
+      DB_USER: ${DB_APP_USER:-doqflow}
+      DB_PASSWORD: ${DB_APP_PASSWORD:?Set DB_APP_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET (32+ bytes)}
+      AI_BASE_URL: http://ai-module:8000
+      AI_INTERNAL_KEY: ${AI_INTERNAL_KEY:?Set AI_INTERNAL_KEY (16+ characters)}
+      UPLOAD_DIR: /app/uploads
+      CORS_ORIGINS: http://localhost:${LOCAL_PORT:-8088}
+      SIGNUP_KEY_LEAD: ${SIGNUP_KEY_LEAD:?Set SIGNUP_KEY_LEAD}
+      REFRESH_COOKIE_SECURE: "false"
+      SPRING_PROFILES_ACTIVE: ${APP_MODE:-development}
+      LAB_VULNS: ${LAB_VULNS:-}
+      URL_IMPORT_ALLOWED_HOSTS: ${URL_IMPORT_ALLOWED_HOSTS:-}
+      ACTUATOR_EXPOSURE: health,info
+    volumes:
+      - upload-data:/app/uploads
+    depends_on:
+      database: { condition: service_healthy }
+    # 직접 API 개발/진단은 localhost에서만. 외부 LAN에는 공개하지 않는다.
+    ports:
+      - "127.0.0.1:${BACKEND_PORT:-18080}:8080"
+
+  ai-module:
+    build: ../../llm/ai
+    environment:
+      AI_INTERNAL_KEY: ${AI_INTERNAL_KEY:?Set AI_INTERNAL_KEY (16+ characters)}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      EMBEDDING_MODEL: text-embedding-3-small
+    volumes:
+      - faiss-data:/app/faiss
+      - type: volume
+        source: upload-data
+        target: /app/uploads
+        read_only: true
+        volume:
+          nocopy: true
+    # backend가 업로드 볼륨의 소유권을 먼저 초기화한다.
+    depends_on:
+      backend: { condition: service_healthy }
+
+  frontend:
+    build:
+      context: ..
+      dockerfile: Dockerfile.local
+      args:
+        APP_MODE: ${APP_MODE:-development}
+        LAB_VULNS: ${LAB_VULNS:-}
+    ports:
+      - "127.0.0.1:${LOCAL_PORT:-8088}:8080"
+    depends_on:
+      backend: { condition: service_healthy }
+
+volumes:
+  db-data:
+  upload-data:
+  faiss-data:

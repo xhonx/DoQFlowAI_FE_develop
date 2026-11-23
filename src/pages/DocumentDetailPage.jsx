@@ -17,6 +17,7 @@ import HistoryTimeline from '../components/document/HistoryTimeline';
 import PermissionPanel from '../components/document/PermissionPanel';
 import VersionPeekPanel from '../components/document/VersionPeekPanel';
 import VersionTable from '../components/document/VersionTable';
+import UrlImportPanel from '../components/document/UrlImportPanel';
 import { documentService } from '../services/documentService';
 import { versionService } from '../services/versionService';
 import { ApiError, getErrorMessage, isNotFound } from '../utils/errors';
@@ -69,6 +70,7 @@ function DocumentDetail({ documentId }) {
   const [flash, setFlash] = useState(null); // { notice?, error? } 한 번 보여 주는 안내
   const [versionToDelete, setVersionToDelete] = useState(null);
   const [deletingVersion, setDeletingVersion] = useState(false);
+  const [downloadingVersion, setDownloadingVersion] = useState(null);
   const [deleteDocOpen, setDeleteDocOpen] = useState(false);
   const [deletingDoc, setDeletingDoc] = useState(false);
   const [compareOpen, setCompareOpen] = useState(false);
@@ -185,6 +187,18 @@ function DocumentDetail({ documentId }) {
     await documentService.update(documentId, patch);
     await fetchAll({ silent: true });
     refreshRef.current?.();
+  };
+
+  const downloadVersion = async (version) => {
+    if (downloadingVersion !== null) return;
+    setDownloadingVersion(version.versionNo);
+    try {
+      await versionService.download(documentId, version.versionNo, version.originalFilename);
+    } catch (error) {
+      setFlash({ error: getErrorMessage(error) });
+    } finally {
+      setDownloadingVersion(null);
+    }
   };
 
   const removeVersion = async () => {
@@ -310,10 +324,17 @@ function DocumentDetail({ documentId }) {
             selectedVersionNo={selectedNo}
             onSelect={(v) => setVersionParam(v.versionNo)}
             onDelete={setVersionToDelete}
+            onDownload={downloadVersion}
+            downloadingVersionNo={downloadingVersion}
           >
             {/* 업로드는 등록자만. 파일 고르기·순서·검증은 WJH 의 패널이, 올리기 버튼과 전송은 이 페이지가 합니다 */}
             {doc.owned ? (
               <div className="flex flex-col gap-3">
+                <UrlImportPanel documentId={documentId} disabled={uploading} onImported={async () => {
+                  setFlash({ notice: '외부 문서를 새 버전으로 가져왔습니다' });
+                  await fetchAll({ silent: true });
+                  refreshRef.current?.();
+                }} />
                 <VersionUploadPanel files={files} onChange={setFiles} startVersionNo={doc.currentVersionNo + 1} disabled={uploading} />
                 {uploadError ? (
                   <p role="alert" className="rounded-xl bg-danger-bg px-3 py-2.5 text-label text-danger">

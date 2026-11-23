@@ -6,6 +6,7 @@ dist
 .env
 .env.*
 !.env.example
+!.env.local.example
 
 # 개인 미리보기 (각자 PC에서만 씀)
 src/preview/LocalPreview.jsx
