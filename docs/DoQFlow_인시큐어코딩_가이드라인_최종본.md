@@ -90,8 +90,7 @@ Compose가 이 목록을 백엔드 시작 환경과 프론트 빌드 인자로 �
 docker compose --env-file .env -f docker-compose.local.yml up -d --build --force-recreate frontend backend
 ```
 
-`restart`만으로는 컨테이너 env가 바뀌지 않는다. 개별 실행 시에는 BE `.env`의
-`SPRING_PROFILES_ACTIVE=lab`, `LAB_VULNS`와 FE `.env`의 `VITE_LAB_VULNS`를 동일하게 맞춘다.
+`restart`만으로는 컨테이너 env가 바뀌지 않는다. 개별 실행 시 BE `.env`의 `LAB_VULNS`와 FE `.env`의 `VITE_LAB_VULNS`를 동일하게 맞춘다. BE 프로필은 PowerShell `$env:SPRING_PROFILES_ACTIVE="lab"`처럼 실행 환경변수로 지정하거나, Spring이 읽는 백엔드 `.env`에 `spring.profiles.active=lab`을 적는다.
 FE는 `npm run dev:lab` 또는 `npm run build:lab`을 사용한다.
 일반 `npm run dev`/`npm run build`에서는 모두 OFF다. BE에 prod/production 프로필이 함께 활성화되면 OFF다.
 현재 도움 함수는 설정을 읽는 기반이며, 실제 취약 분기는 팀원들의 후속 작업이다.

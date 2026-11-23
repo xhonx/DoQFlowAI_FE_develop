@@ -4,7 +4,7 @@
 설정은 시작 시 고정되며 기본값은 전부 off다. 프론트 훅과 백엔드 도우미의 기존
 호출 형식은 유지하지만 네트워크/DB 조회와 실시간 변경은 없다.
 
-- 백엔드: `.env.example` → `.env`. `SPRING_PROFILES_ACTIVE=lab`, `LAB_VULNS=`.
+- 백엔드: `.env.example` → `.env`에 `LAB_VULNS=`. 프로필은 실행 환경변수 `SPRING_PROFILES_ACTIVE=lab` 또는 백엔드 `.env`의 Spring 속성 `spring.profiles.active=lab`로 지정한다.
 - 프론트: `.env.example` → `.env`. `VITE_LAB_VULNS=`, `npm run dev:lab`.
 - 선택한 항목을 쉼표로 나열한다. 예: `1-1,2-2`. 개별 실행 시 양쪽 목록을 맞춘다.
 - 백엔드 프로필에 `prod` 또는 `production`이 함께 있으면 전부 off.
