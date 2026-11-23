@@ -34,6 +34,7 @@ export function toApiError(status, body) {
 export function getErrorMessage(error, { chat = false } = {}) {
   if (!(error instanceof ApiError) || error.status === 0) return MESSAGES.SERVER;
   const { status, code, message } = error;
+  if (code === 'URL_IMPORT_FAILED') return '외부 문서를 가져올 수 없습니다. URL과 허용 출처를 확인해 주세요.';
   if (status === 502) return MESSAGES.AI_UNAVAILABLE;
   if (status >= 500) return MESSAGES.SERVER;
   if (status === 403) return MESSAGES.FORBIDDEN;

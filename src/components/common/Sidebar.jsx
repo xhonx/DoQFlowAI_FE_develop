@@ -155,6 +155,7 @@ export default function Sidebar({ list, open = false, onClose, createOpen: exter
             onDelete={askDelete}
           />
         </nav>
+        <Button variant="ghost" onClick={() => { navigate('/help'); onClose?.(); }}>도움말</Button>
         {isLeader ? (
           <Button className="w-full" onClick={openCreate}>
             <span aria-hidden="true">+</span> 문서 만들기

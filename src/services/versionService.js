@@ -3,6 +3,7 @@ import { api } from './api';
 import { saveDownload } from '../utils/download';
 
 export const versionService = {
+  importUrl: (documentId, url) => api.post(`/documents/${documentId}/versions/from-url`, { url }, { timeout: 45000 }).then((r) => r.data),
   /** files: File[]. 배열 순서가 곧 버전 번호 순서 */
   upload: (documentId, files) => {
     const form = new FormData();
