@@ -21,7 +21,7 @@ const COLUMNS = 'md:grid md:grid-cols-[6.5rem_minmax(0,1fr)_5.5rem_4.5rem] md:it
  * [삭제]는 등록자(owned)에게만 보이고, 버전이 하나뿐이면 비활성입니다(서버도 400).
  * children 자리에는 페이지가 업로드 영역을 넣습니다.
  */
-export default function VersionTable({ versions, currentVersionNo, owned = false, onDelete, onSelect, selectedVersionNo = null, children, title = '버전 목록' }) {
+export default function VersionTable({ versions, currentVersionNo, owned = false, onDelete, onSelect, onDownload, downloadingVersionNo = null, selectedVersionNo = null, children, title = '버전 목록' }) {
   const filterId = useId();
   const [filter, setFilter] = useState('ALL');
   // 원본 배열을 바꾸지 않도록 복사한 뒤 버전 번호 내림차순
@@ -70,6 +70,7 @@ export default function VersionTable({ versions, currentVersionNo, owned = false
               <span>상태</span>
               <span>등록일</span>
             </div>
+            {onDownload ? <span className="w-16 shrink-0" /> : null}
             {owned ? <span className="w-12 shrink-0" /> : null}
           </div>
           <ul className="flex flex-col divide-y divide-line">
@@ -100,6 +101,17 @@ export default function VersionTable({ versions, currentVersionNo, owned = false
                     <StatusBadge status={v.status} />
                     <span className="shrink-0 text-caption text-muted">{formatShortDate(v.createdAt)}</span>
                   </button>
+                  {onDownload ? (
+                    <button
+                      type="button"
+                      aria-label={`v${v.versionNo} 원본 다운로드`}
+                      disabled={downloadingVersionNo !== null}
+                      onClick={() => onDownload(v)}
+                      className="min-h-11 w-16 shrink-0 rounded-btn-sm text-caption text-ink-2 hover:bg-soft disabled:opacity-50"
+                    >
+                      {downloadingVersionNo === v.versionNo ? '받는 중…' : '다운로드'}
+                    </button>
+                  ) : null}
                   {owned ? (
                     <button
                       type="button"
@@ -136,6 +148,8 @@ VersionTable.propTypes = {
   currentVersionNo: PropTypes.number,
   owned: PropTypes.bool,
   onDelete: PropTypes.func,
+  onDownload: PropTypes.func,
+  downloadingVersionNo: PropTypes.number,
   onSelect: PropTypes.func,
   selectedVersionNo: PropTypes.number,
   children: PropTypes.node,

@@ -41,6 +41,11 @@ api.interceptors.response.use(
         // 갱신 실패: 아래에서 원래 401 을 던집니다
       }
     }
-    throw toApiError(response.status, response.data);
+    // 다운로드 요청의 오류도 Blob으로 수신되므로 기존 오류 봉투로 복구한다.
+    let body = response.data;
+    if (body instanceof Blob) {
+      try { body = JSON.parse(await body.text()); } catch { body = null; }
+    }
+    throw toApiError(response.status, body);
   },
 );
