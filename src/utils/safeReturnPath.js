@@ -23,3 +23,8 @@ export function safeReturnPath(value) {
     return '/';
   }
 }
+
+/** 기존 state.from을 우선하고, 직접 로그인 링크에는 returnUrl을 허용한다. */
+export function loginReturnPath(from, search) {
+  return safeReturnPath(from ?? new URLSearchParams(search).get('returnUrl'));
+}
