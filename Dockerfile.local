@@ -1,0 +1,19 @@
+# 로컬 전용. 운영 Dockerfile은 기본 production 빌드를 유지한다.
+FROM node:22-alpine AS build
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci
+COPY . .
+ARG APP_MODE=development
+ARG LAB_VULNS=
+RUN case "$APP_MODE" in development|lab) ;; *) exit 1 ;; esac \
+    && VITE_LAB_VULNS="$LAB_VULNS" npm run build -- --mode "$APP_MODE"
+
+FROM nginxinc/nginx-unprivileged:1.30-alpine
+# HTTP 로컬 기본 설정만 복사. 실습용 nginx 템플릿은 별도 인프라 작업이다.
+COPY nginx/http/ /etc/nginx/templates/http/
+ENV BACKEND_URL=http://backend:8080 \
+    NGINX_ENTRYPOINT_LOCAL_RESOLVERS=1 \
+    NGINX_ENVSUBST_TEMPLATE_DIR=/etc/nginx/templates/http
+COPY --from=build /app/dist /usr/share/nginx/html
+EXPOSE 8080
